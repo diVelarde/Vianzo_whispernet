@@ -796,5 +796,92 @@
 
     initApp();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99a88c39a60bba08',t:'MTc2MjQ3MzU5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.conreadyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  <script>
+  const API_URL = "https://vianzo-whispernet.onrender.com";
+
+  // Enable/disable Post button
+  const textarea = document.getElementById("compose-textarea");
+  const postButton = document.getElementById("post-button");
+
+  textarea.addEventListener("input", () => {
+    postButton.disabled = textarea.value.trim().length === 0;
+  });
+
+  // Submit post
+  document.getElementById("compose-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const content = textarea.value.trim();
+    if (!content) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/whispers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content })
+      });
+
+      const newPost = await res.json();
+      textarea.value = "";
+      postButton.disabled = true;
+
+      posts.unshift(newPost);
+      renderFeed();
+
+    } catch (err) {
+      console.error("Failed to post whisper:", err);
+    }
+  });
+
+  // Fetch all posts on load
+  async function loadFeed() {
+    try {
+      const res = await fetch(`${API_URL}/api/whispers`);
+      posts = await res.json();
+      renderFeed();
+    } catch (err) {
+      console.error("Failed to load feed:", err);
+    }
+  }
+
+  // Render feed visually using your existing styles
+  function renderFeed() {
+    const feed = document.getElementById("feed");
+    feed.innerHTML = "";
+
+    if (posts.length === 0) {
+      feed.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">💭</div>
+          <h3 class="empty-title">No whispers yet</h3>
+          <p class="empty-message">Be the first to say something anonymously.</p>
+        </div>`;
+      return;
+    }
+
+    posts.forEach(post => {
+      const el = document.createElement("div");
+      el.className = "post";
+      el.innerHTML = `
+        <div class="post-header">
+          <div class="post-avatar">👤</div>
+          <div class="post-info">
+            <span class="post-username">Anonymous</span>
+            <span class="post-handle">@user</span>
+            <span class="post-time">${new Date(post.createdAt).toLocaleString()}</span>
+          </div>
+        </div>
+        <div class="post-content">${post.content}</div>
+        <div class="post-actions">
+          <button class="action-button">❤️ Like</button>
+          <button class="action-button">💬 Comment</button>
+        </div>
+      `;
+      feed.appendChild(el);
+    });
+  }
+
+  // Load feed on startup
+  loadFeed();
+</script>
+
 </html>

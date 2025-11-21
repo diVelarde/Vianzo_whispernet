@@ -797,91 +797,178 @@
     initApp();
   </script>
   <script>
-  const API_URL = "https://vianzo-whispernet.onrender.com";
+const BACKEND_URL = "https://vianzotech.onrender.com";
 
-  // Enable/disable Post button
-  const textarea = document.getElementById("compose-textarea");
-  const postButton = document.getElementById("post-button");
+async function initApp() {
+  if (window.elementSdk) {
+    // existing elementSdk init code
+  }
 
-  textarea.addEventListener("input", () => {
-    postButton.disabled = textarea.value.trim().length === 0;
-  });
+  setupEventListeners();
+  await fetchPosts(); // load posts from backend
+}
 
-  // Submit post
-  document.getElementById("compose-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const content = textarea.value.trim();
-    if (!content) return;
-
-    try {
-      const res = await fetch(`${API_URL}/api/whispers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content })
+function setupEventListeners() {
+  // Navigation
+  document.querySelectorAll('.nav-link').forEach(link => {
+    if (link.id === 'logout-link') {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Logging out...');
+        window.location.href = 'base.html';
       });
-
-      const newPost = await res.json();
-      textarea.value = "";
-      postButton.disabled = true;
-
-      posts.unshift(newPost);
-      renderFeed();
-
-    } catch (err) {
-      console.error("Failed to post whisper:", err);
+    } else {
+      link.addEventListener('click', handleNavigation);
     }
   });
 
-  // Fetch all posts on load
-  async function loadFeed() {
-    try {
-      const res = await fetch(`${API_URL}/api/whispers`);
-      posts = await res.json();
-      renderFeed();
-    } catch (err) {
-      console.error("Failed to load feed:", err);
-    }
+  const composeTextarea = document.getElementById('compose-textarea');
+  const postButton = document.getElementById('post-button');
+  
+  composeTextarea.addEventListener('input', () => {
+    postButton.disabled = composeTextarea.value.trim().length === 0;
+  });
+
+  document.getElementById('compose-form').addEventListener('submit', handlePost);
+}
+
+function handleNavigation(e) {
+  e.preventDefault();
+  document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+
+  const section = e.currentTarget.dataset.section;
+  const header = document.querySelector('.header h1');
+  switch(section) {
+    case 'feed': header.textContent = 'Home'; break;
+    case 'search': header.textContent = 'Search'; break;
+    case 'ranking': header.textContent = 'Trending'; break;
+    case 'profile': header.textContent = 'Profile'; break;
   }
+}
 
-  // Render feed visually using your existing styles
-  function renderFeed() {
-    const feed = document.getElementById("feed");
-    feed.innerHTML = "";
+async function handlePost(e) {
+  e.preventDefault();
+  const textarea = document.getElementById('compose-textarea');
+  const content = textarea.value.trim();
+  if (!content) return;
 
-    if (posts.length === 0) {
-      feed.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">💭</div>
-          <h3 class="empty-title">No whispers yet</h3>
-          <p class="empty-message">Be the first to say something anonymously.</p>
-        </div>`;
-      return;
-    }
+  const newPost = { content }; // send only content
 
-    posts.forEach(post => {
-      const el = document.createElement("div");
-      el.className = "post";
-      el.innerHTML = `
-        <div class="post-header">
-          <div class="post-avatar">👤</div>
-          <div class="post-info">
-            <span class="post-username">Anonymous</span>
-            <span class="post-handle">@user</span>
-            <span class="post-time">${new Date(post.createdAt).toLocaleString()}</span>
-          </div>
-        </div>
-        <div class="post-content">${post.content}</div>
-        <div class="post-actions">
-          <button class="action-button">❤️ Like</button>
-          <button class="action-button">💬 Comment</button>
-        </div>
-      `;
-      feed.appendChild(el);
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/posts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newPost)
     });
+
+    if (!res.ok) throw new Error("Failed to post whisper");
+
+    textarea.value = '';
+    document.getElementById('post-button').disabled = true;
+    await fetchPosts(); // reload feed
+  } catch (err) {
+    console.error(err);
+    alert("Failed to post. Please try again.");
+  }
+}
+
+async function fetchPosts() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/posts`);
+    if (!res.ok) throw new Error("Failed to fetch posts");
+    posts = await res.json();
+    renderFeed();
+  } catch (err) {
+    console.error(err);
+    posts = [];
+    renderFeed();
+  }
+}
+
+function renderFeed() {
+  const feedContainer = document.getElementById('feed');
+  feedContainer.innerHTML = '';
+
+  if (posts.length === 0) {
+    feedContainer.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">💭</div>
+        <h3 class="empty-title">No whispers yet</h3>
+        <p class="empty-message">Be the first to share an anonymous thought with the world.</p>
+      </div>
+    `;
+  } else {
+    posts.forEach(post => feedContainer.appendChild(createPostElement(post)));
+  }
+  
+  updateTrending();
+}
+
+function updateTrending() {
+  const trendingContainer = document.getElementById('trending-list');
+  if (posts.length === 0) {
+    trendingContainer.innerHTML = `<div class="trending-empty"><p>No whispers to rank yet. Start the conversation!</p></div>`;
+    return;
   }
 
-  // Load feed on startup
-  loadFeed();
+  const topPosts = [...posts].sort((a,b) => b.likes - a.likes).slice(0,5);
+  trendingContainer.innerHTML = '';
+  
+  topPosts.forEach((post, index) => {
+    const paddedNumber = String(post.whisperNumber).padStart(4,'0');
+    trendingContainer.innerHTML += `
+      <div class="trending-item">
+        <div class="trending-topic">
+          <span class="trending-rank">#${index+1}</span>
+          Whispering#${paddedNumber}
+        </div>
+        <div class="trending-posts">${post.likes} likes</div>
+      </div>
+    `;
+  });
+}
+
+function createPostElement(post) {
+  const postDiv = document.createElement('div');
+  postDiv.className = 'post';
+  postDiv.innerHTML = `
+    <div class="post-header">
+      <div class="post-avatar">👤</div>
+      <div class="post-info">
+        <span class="post-username">${post.username || "Anonymous"}</span>
+        <span class="post-time">· ${post.time || "now"}</span>
+      </div>
+    </div>
+    <div class="post-content">${post.content}</div>
+    <div class="post-actions">
+      <button class="action-button reply-btn" data-id="${post.id}">💬 ${post.replies || 0}</button>
+      <button class="action-button like-btn ${post.liked ? 'liked' : ''}" data-id="${post.id}">
+        ${post.liked ? '❤️' : '🤍'} ${post.likes || 0}
+      </button>
+      <button class="action-button share-btn" data-id="${post.id}">📤</button>
+    </div>
+  `;
+
+  postDiv.querySelector('.like-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleLike(post.id);
+  });
+
+  return postDiv;
+}
+
+async function toggleLike(postId) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/posts/${postId}/like`, { method: "POST" });
+    if (!res.ok) throw new Error("Failed to like");
+    await fetchPosts();
+  } catch(err) {
+    console.error(err);
+  }
+}
+
+initApp();
 </script>
 
 </html>

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Heart, MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
 
 const ReplyForm = ({ parentCommentId, onReplySubmit, userProfile, onCancel }) => {
   const [replyContent, setReplyContent] = useState("");

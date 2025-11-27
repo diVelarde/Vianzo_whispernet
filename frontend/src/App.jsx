@@ -6,7 +6,7 @@ import Feed from './components/Feed';
 import Trending from './components/Trending';
 import './App.css';
 
-const BACKEND_URL = "https://vianzotech.onrender.com"; // replace with your backend URL
+const BACKEND_URL = "https://whisper-net.base44.app/api/v1"; // use your backend API URL
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -15,7 +15,7 @@ function App() {
   // Fetch posts from backend
   const fetchPosts = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/posts`);
+      const res = await fetch(`${BACKEND_URL}/posts`);
       const data = await res.json();
       setPosts(data);
     } catch (err) {
@@ -30,7 +30,7 @@ function App() {
 
   const handlePost = async (content) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/posts`, {
+      const res = await fetch(`${BACKEND_URL}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content })
@@ -45,7 +45,7 @@ function App() {
 
   const handleLike = async (postId) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/posts/${postId}/like`, { method: 'POST' });
+      const res = await fetch(`${BACKEND_URL}/posts/${postId}/like`, { method: 'POST' });
       if (!res.ok) throw new Error('Failed to like');
       fetchPosts();
     } catch (err) {

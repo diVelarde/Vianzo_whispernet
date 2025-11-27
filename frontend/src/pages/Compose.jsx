@@ -80,22 +80,17 @@ export default function Compose() {
       });
 
       if (!res.ok) {
-        // try to parse server error message
         let serverMsg = "";
         try {
           const parsed = await res.json();
           serverMsg = parsed?.message || parsed?.error || "";
         } catch {
-          // ignore parse errors
         }
         throw new Error(serverMsg || `Failed to submit (${res.status})`);
       }
 
-      // Optionally use response data (new post) if returned
       const created = await res.json().catch(() => null);
 
-      // Navigate back to feed (or to the new post if you have a route)
-      // Pass a small state message so Feed can optionally show a toast
       navigate(createPageUrl("Feed"), { state: { justPosted: true, post: created } });
     } catch (err) {
       if (err.name === "AbortError") {
@@ -108,7 +103,6 @@ export default function Compose() {
       setIsSubmitting(false);
     }
 
-    // cleanup not strictly necessary here, but kept for clarity
     return () => controller.abort();
   };
 

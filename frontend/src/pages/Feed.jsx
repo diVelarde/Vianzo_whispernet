@@ -4,7 +4,7 @@ import { ArrowUp } from "lucide-react";
 import MessageCard from "../components/MessageCard.jsx";
 import "../styles/Feed.css";
 
-import { API_BASE_URL } from "../api.js";
+import { API_BASE_URL, getJsonHeaders } from "../api.js";
 
 const createPageUrl = (pageName) => `/${pageName.toLowerCase()}`;
 
@@ -83,6 +83,7 @@ export default function Feed() {
         setIsLoading(true);
         setFetchError(null);
 
+        const headers = getJsonHeaders();
         const res = await fetch(`${API_BASE_URL}/posts`, {
           method: "GET",
           headers,

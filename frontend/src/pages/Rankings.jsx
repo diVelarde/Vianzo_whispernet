@@ -77,19 +77,16 @@ export default function Rankings() {
       const headers = token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
 
       try {
-        // Try a dedicated leaderboard endpoint first
         let rankingsRes = await fetch(`${API_BASE_URL}/rankings`, { headers, signal: controller.signal });
         let rankingsData = null;
 
         if (rankingsRes.ok) {
           rankingsData = await rankingsRes.json();
         } else {
-          // fallback: try a profiles endpoint sorted by popularity (common patterns)
           const fallbackRes = await fetch(`${API_BASE_URL}/profiles?sort=-popularity_score&limit=50`, { headers, signal: controller.signal });
           if (fallbackRes.ok) {
             rankingsData = await fallbackRes.json();
           } else {
-            // final fallback: some APIs return /leaderboard
             const otherRes = await fetch(`${API_BASE_URL}/leaderboard`, { headers, signal: controller.signal });
             if (otherRes.ok) {
               rankingsData = await otherRes.json();
@@ -99,7 +96,6 @@ export default function Rankings() {
 
         if (!mounted) return;
 
-        // Normalize data into expected shape: array of users
         let normalized = [];
         if (Array.isArray(rankingsData)) {
           normalized = rankingsData.map((u, idx) => ({
@@ -114,10 +110,8 @@ export default function Rankings() {
         }
 
         if (!normalized.length) {
-          // If the API returned nothing useful, use mock users
           setUsers(mockUsers);
         } else {
-          // Sort descending by popularity_score just in case
           normalized.sort((a, b) => (b.popularity_score || 0) - (a.popularity_score || 0));
           setUsers(normalized);
         }

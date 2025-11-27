@@ -21,7 +21,6 @@ export default function CommentSection({ messageId }) {
 
   const fetchControllerRef = useRef(null);
 
-  // helper to recursively add a reply to comments tree
   const addReplyToTree = (items, parentId, reply) => {
     return items.map(item => {
       if (item.id === parentId) {
@@ -34,7 +33,6 @@ export default function CommentSection({ messageId }) {
     });
   };
 
-  // fetch user profile (best-effort)
   useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
@@ -44,7 +42,6 @@ export default function CommentSection({ messageId }) {
         const token = localStorage.getItem("token");
         const headers = token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
 
-        // try common endpoints for "me"
         let me = null;
         try {
           const res = await fetch(`${API_BASE_URL}/me`, { headers, signal: controller.signal });
@@ -54,7 +51,6 @@ export default function CommentSection({ messageId }) {
             if (res2.ok) me = await res2.json();
           }
         } catch (err) {
-          // ignore, we'll fallback to mock
         }
 
         if (mounted) setUserProfile(me ?? mockUserProfile);
@@ -72,7 +68,6 @@ export default function CommentSection({ messageId }) {
   }, []);
 
   const fetchComments = useCallback(async () => {
-    // Abort any previous fetch
     if (fetchControllerRef.current) {
       fetchControllerRef.current.abort();
     }
@@ -88,10 +83,8 @@ export default function CommentSection({ messageId }) {
 
       let url = null;
       if (messageId) {
-        // common REST patterns
         url = `${API_BASE_URL}/posts/${encodeURIComponent(messageId)}/comments?limit=200`;
       } else {
-        // fallback: fetch recent comments
         url = `${API_BASE_URL}/comments?limit=50`;
       }
 
@@ -100,19 +93,16 @@ export default function CommentSection({ messageId }) {
       if (res.ok) {
         data = await res.json();
       } else {
-        // try alternate common endpoint shape
         const altRes = await fetch(`${API_BASE_URL}/comments?post_id=${encodeURIComponent(messageId || "")}&limit=200`, { headers, signal: controller.signal });
         if (altRes.ok) data = await altRes.json();
       }
 
       if (!data) {
-        // fallback to mocks
         setComments(mockComments);
         setIsLoading(false);
         return;
       }
 
-      // normalize response shapes: array or { comments: [...] }
       let items = Array.isArray(data) ? data : (Array.isArray(data.comments) ? data.comments : []);
       items = items.map((c) => ({
         id: c.id ?? c._id ?? String(Math.random()),
@@ -123,7 +113,6 @@ export default function CommentSection({ messageId }) {
         replies: Array.isArray(c.replies) ? c.replies : []
       }));
 
-      // ensure replies are normalized recursively
       const normalizeReplies = (arr) =>
         arr.map((r) => ({
           id: r.id ?? r._id ?? String(Math.random()),
@@ -139,7 +128,6 @@ export default function CommentSection({ messageId }) {
       setComments(items);
     } catch (err) {
       if (err.name === "AbortError") {
-        // ignore abort
         return;
       }
       console.warn("Failed to fetch comments, using fallback:", err);
@@ -153,7 +141,6 @@ export default function CommentSection({ messageId }) {
 
   useEffect(() => {
     fetchComments();
-    // cleanup on unmount
     return () => {
       if (fetchControllerRef.current) fetchControllerRef.current.abort();
     };
@@ -163,7 +150,6 @@ export default function CommentSection({ messageId }) {
     if (content.trim() === "" || !userProfile) return;
     setIsSubmitting(true);
 
-    // optimistic comment / reply
     const tempId = `temp-${Date.now()}`;
     const optimistic = {
       id: tempId,
@@ -198,7 +184,6 @@ export default function CommentSection({ messageId }) {
       });
 
       if (!res.ok) {
-        // try an alternate endpoint pattern
         const altRes = await fetch(`${API_BASE_URL}/posts/${encodeURIComponent(messageId)}/comments`, {
           method: "POST",
           headers,
@@ -206,7 +191,6 @@ export default function CommentSection({ messageId }) {
         });
         if (!altRes.ok) throw new Error(`Comment submit failed (${res.status})`);
         const createdAlt = await altRes.json().catch(() => null);
-        // reconcile optimistic
         const created = createdAlt ?? null;
         if (created) {
           if (parentCommentId) {
@@ -219,9 +203,7 @@ export default function CommentSection({ messageId }) {
         const created = await res.json().catch(() => null);
         if (created) {
           if (parentCommentId) {
-            // replace the optimistic reply with server reply in the tree
             setComments(prev => addReplyToTree(prev, parentCommentId, { ...(created), replies: created.replies ?? [] }));
-            // remove the temporary optimistic reply we appended earlier (it will now be duplicated)
             setComments(prev => {
               const removeTemp = (items) =>
                 items.map(i => {
@@ -245,9 +227,7 @@ export default function CommentSection({ messageId }) {
       }
     } catch (err) {
       console.error("Failed to post comment:", err);
-      // mark optimistic comment as unsynced so UI can show a notice if desired
       setComments(prev => prev.map(c => c.id === tempId ? { ...c, _unsynced: true } : c));
-      // optionally revert optimistic change or inform the user; here we keep it but flagged
     } finally {
       setIsSubmitting(false);
     }

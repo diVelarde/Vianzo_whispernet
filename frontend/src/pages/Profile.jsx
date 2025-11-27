@@ -44,14 +44,12 @@ export default function Profile() {
       setFetchError(null);
 
       try {
-        // Try to fetch authenticated user info
         let fetchedUser = null;
         try {
           const res = await fetch(`${API_BASE_URL}/me`, { headers, signal: controller.signal });
           if (res.ok) {
             fetchedUser = await res.json();
           } else if (res.status === 404) {
-            // Some backends expose /users/me
             const res2 = await fetch(`${API_BASE_URL}/users/me`, { headers, signal: controller.signal });
             if (res2.ok) fetchedUser = await res2.json();
           }
@@ -60,17 +58,14 @@ export default function Profile() {
         }
 
         if (!fetchedUser) {
-          // fallback to mock user
           fetchedUser = mockUser;
         }
 
         if (!mounted) return;
         setUser(fetchedUser);
 
-        // Try to fetch profile for the user
         let fetchedProfile = null;
         try {
-          // Prefer profile endpoint by user id
           const byIdRes = await fetch(`${API_BASE_URL}/profiles/${fetchedUser.id}`, {
             headers,
             signal: controller.signal
@@ -78,14 +73,12 @@ export default function Profile() {
           if (byIdRes.ok) {
             fetchedProfile = await byIdRes.json();
           } else {
-            // fallback to query-by-user_id
             const qRes = await fetch(`${API_BASE_URL}/profiles?user_id=${encodeURIComponent(fetchedUser.id)}`, {
               headers,
               signal: controller.signal
             });
             if (qRes.ok) {
               const qData = await qRes.json();
-              // if the API returns an array, pick the first
               if (Array.isArray(qData)) fetchedProfile = qData[0] || null;
               else fetchedProfile = qData;
             }
@@ -104,7 +97,6 @@ export default function Profile() {
       } catch (err) {
         console.error("Error loading profile data:", err);
         setFetchError(err.message || "Failed to load profile");
-        // keep UI usable by falling back to mocks
         setUser((u) => u || mockUser);
         setProfile((p) => p || mockProfile);
         setEditedName((p) => p || mockProfile.display_name);
@@ -125,7 +117,6 @@ export default function Profile() {
     try {
       localStorage.setItem("incognitoMode", JSON.stringify(isIncognitoMode));
     } catch {
-      // ignore storage errors
     }
   }, [isIncognitoMode]);
 
@@ -140,12 +131,9 @@ export default function Profile() {
       : { "Content-Type": "application/json" };
 
     try {
-      // best-effort backend logout if endpoint exists
       await fetch(`${API_BASE_URL}/logout`, { method: "POST", headers }).catch(() => {});
     } catch {
-      // ignore errors
     } finally {
-      // clear local auth and reload to reset state
       try {
         localStorage.removeItem("token");
       } catch {}
@@ -175,7 +163,6 @@ export default function Profile() {
       : { "Content-Type": "application/json" };
 
     try {
-      // Try PATCH to profile id
       const res = await fetch(`${API_BASE_URL}/profiles/${profile.id}`, {
         method: "PATCH",
         headers,
@@ -183,7 +170,6 @@ export default function Profile() {
       });
 
       if (!res.ok) {
-        // try PUT as fallback
         const res2 = await fetch(`${API_BASE_URL}/profiles/${profile.id}`, {
           method: "PUT",
           headers,
@@ -205,7 +191,6 @@ export default function Profile() {
       console.error("Failed to save profile:", err);
       setFetchError(err.message || "Failed to save profile");
       alert("Could not save profile. Changes are still local.");
-      // still update locally as optimistic fallback
       setProfile((prev) => ({ ...(prev || {}), display_name: trimmed }));
       setIsEditing(false);
     } finally {

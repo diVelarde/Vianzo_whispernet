@@ -1,120 +1,232 @@
-// import { useState, useEffect } from "react";
-// import { Message, User, UserProfile, AppSettings } from "@/entities/all";
-// import ComposeForm from "../components/ComposeForm";
-// import { useNavigate } from "react-router-dom";
-// import { createPageUrl } from "@/utils";
-// import { ArrowLeft } from "lucide-react";
-// import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Send, Zap, X } from "lucide-react";
+import "../styles/Compose.css";
 
-// const adjectives = ["Kind", "Brave", "Gentle", "Bright", "Happy", "Calm", "Sweet", "Clever", "Wise", "Cool"];
-// const animals = ["Panda", "Dolphin", "Butterfly", "Owl", "Rabbit", "Fox", "Bird", "Cat", "Lion", "Tiger"];
+import { API_BASE_URL } from "../api.js";
 
-// function generateAnonymousName() {
-//   const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-//   const animal = animals[Math.floor(Math.random() * animals.length)];
-//   return `${adj}${animal}`;
-// }
-
-// async function getNextWhisperId() {
-//   try {
-//     const settings = await AppSettings.filter({ setting_key: "whisper_counter" });
-//     let counter = 1;
-//     if (settings.length > 0) {
-//       counter = parseInt(settings[0].setting_value, 10) + 1;
-//       await AppSettings.update(settings[0].id, { setting_value: counter.toString() });
-//     } else {
-//       await AppSettings.create({ setting_key: "whisper_counter", setting_value: "1" });
-//     }
-//     return `Whispering #${counter.toString().padStart(4, '0')}`;
-//   } catch (error) {
-//     console.error("Failed to get next whisper ID:", error);
-//     return `Whispering #${Math.floor(Math.random() * 9999) + 1}`;
-//   }
-// }
-
-// export default function Compose() {
-//   const navigate = useNavigate();
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-//   const [currentUser, setCurrentUser] = useState(null);
-//   const [isIncognitoMode, setIsIncognitoMode] = useState(localStorage.getItem('whispernet_incognito_mode') === 'true');
-
-//   useEffect(() => {
-//     User.me().then(setCurrentUser).catch(() => navigate(createPageUrl("Feed")));
-    
-//     const handleThemeChange = (event) => {
-//       setIsIncognitoMode(event.detail.isIncognitoMode);
-//     };
-
-//     window.addEventListener('themeChanged', handleThemeChange);
-//     return () => window.removeEventListener('themeChanged', handleThemeChange);
-//   }, [navigate]);
-
-//   const handleSubmit = async (messageData) => {
-//     if (!currentUser) return;
-//     setIsSubmitting(true);
-//     try {
-//       // Ensure user has a profile
-//       let userProfiles = await UserProfile.filter({ user_id: currentUser.id });
-//       let userProfile;
-      
-//       if (userProfiles.length === 0) {
-//         userProfile = await UserProfile.create({
-//           user_id: currentUser.id,
-//           display_name: generateAnonymousName(),
-//         });
-//       } else {
-//         userProfile = userProfiles[0];
-//       }
-
-//       const whisperId = await getNextWhisperId();
-      
-//       const mode = isIncognitoMode ? 'unhinged' : 'positive';
-//       const isApprovedStatus = mode === 'unhinged' ? 'approved' : 'pending';
-
-//       await Message.create({
-//         user_id: currentUser.id,
-//         content: messageData.content,
-//         whisper_id: whisperId,
-//         tags: messageData.tags,
-//         mode: mode,
-//         is_approved: isApprovedStatus,
-//         likes_count: 0,
-//         comments_count: 0
-//       });
-
-//       if (mode === 'positive') {
-//           await UserProfile.update(userProfile.id, { 
-//             user_id: userProfile.user_id,
-//             messages_posted: (userProfile.messages_posted || 0) + 1 
-//           });
-//       }
-
-//       navigate(createPageUrl("Feed"));
-//     } catch (error) {
-//       console.error("Error submitting message:", error);
-//     }
-//     setIsSubmitting(false);
-//   };
-  
-//   if (!currentUser) return null;
-
-//   return (
-//     <div className="h-full">
-//       <div className="sticky top-0 glass-effect p-6 rounded-t-3xl border-b border-border-color">
-//         <div className="flex items-center gap-4">
-//           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full">
-//             <ArrowLeft className="w-5 h-5" />
-//           </Button>
-//           <h1 className="text-xl font-bold">Create Your Vibe</h1>
-//         </div>
-//       </div>
-//       <ComposeForm onSubmit={handleSubmit} isSubmitting={isSubmitting} isIncognitoMode={isIncognitoMode} />
-//     </div>
-//   );
-// }
-
-import React from "react";
+const createPageUrl = (pageName) => `/${pageName.toLowerCase()}`;
 
 export default function Compose() {
-  return <div className="text-xl font-medium">This is the Compose page.</div>;
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isIncognitoMode, setIsIncognitoMode] = useState(false);
+  const [content, setContent] = useState("");
+  const [tags, setTags] = useState([]);
+  const [currentTag, setCurrentTag] = useState("");
+  const [charCount, setCharCount] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
+  const maxChars = 500;
+
+  const handleContentChange = (e) => {
+    const text = e.target.value;
+    if (text.length <= maxChars) {
+      setContent(text);
+      setCharCount(text.length);
+    }
+  };
+
+  const addTag = () => {
+    const trimmed = currentTag.trim().toLowerCase();
+    if (trimmed && !tags.includes(trimmed) && tags.length < 5) {
+      setTags((prev) => [...prev, trimmed]);
+      setCurrentTag("");
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && currentTag.trim()) {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+
+    const trimmedContent = content.trim();
+    if (trimmedContent.length < 10) {
+      setErrorMessage("Please enter at least 10 characters.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    try {
+      const token = localStorage.getItem("token"); // optional auth
+      const headers = token
+        ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+        : { "Content-Type": "application/json" };
+
+      const body = {
+        content: trimmedContent,
+        tags,
+        mode: isIncognitoMode ? "unhinged" : "positive",
+      };
+
+      const res = await fetch(`${API_BASE_URL}/posts`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+        signal,
+      });
+
+      if (!res.ok) {
+        // try to parse server error message
+        let serverMsg = "";
+        try {
+          const parsed = await res.json();
+          serverMsg = parsed?.message || parsed?.error || "";
+        } catch {
+          // ignore parse errors
+        }
+        throw new Error(serverMsg || `Failed to submit (${res.status})`);
+      }
+
+      // Optionally use response data (new post) if returned
+      const created = await res.json().catch(() => null);
+
+      // Navigate back to feed (or to the new post if you have a route)
+      // Pass a small state message so Feed can optionally show a toast
+      navigate(createPageUrl("Feed"), { state: { justPosted: true, post: created } });
+    } catch (err) {
+      if (err.name === "AbortError") {
+        setErrorMessage("Submission aborted.");
+      } else {
+        console.error("Compose submit error:", err);
+        setErrorMessage(err.message || "Failed to submit post. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    // cleanup not strictly necessary here, but kept for clarity
+    return () => controller.abort();
+  };
+
+  return (
+    <div className="compose-container">
+      <div className="compose-header">
+        <button onClick={() => navigate(-1)} className="back-button" aria-label="Go back">
+          <ArrowLeft />
+        </button>
+        <h1>Create Your Vibe</h1>
+      </div>
+
+      <div className="compose-form-wrapper">
+        <div className="compose-card">
+          <div className="compose-card-header">
+            <span
+              className="compose-icon"
+              role="img"
+              aria-label={isIncognitoMode ? "Incognito" : "Positive"}
+              onClick={() => setIsIncognitoMode((s) => !s)}
+              style={{ cursor: "pointer" }}
+              title="Toggle incognito mode"
+            >
+              {isIncognitoMode ? "🔥" : "✨"}
+            </span>
+            <span className="compose-mode-title">
+              {isIncognitoMode ? "Incognito Post" : "Positive Vibe"}
+            </span>
+          </div>
+
+          <form onSubmit={handleSubmit} className="compose-form">
+            <div className="textarea-wrapper">
+              <textarea
+                placeholder={
+                  isIncognitoMode
+                    ? "What's really on your mind? Let it all out... Posts are not moderated."
+                    : "Share something positive, encouraging, or inspiring... Posts are reviewed for kindness."
+                }
+                value={content}
+                onChange={handleContentChange}
+                className="compose-textarea"
+                aria-label="Compose your vibe"
+                disabled={isSubmitting}
+              />
+              <div className="textarea-footer">
+                <span className="helper-text">
+                  {isIncognitoMode ? "Express yourself freely (but respectfully)" : "Be kind and supportive!"}
+                </span>
+                <span className={`char-count ${charCount > maxChars * 0.8 ? "warning" : ""}`}>
+                  {charCount}/{maxChars}
+                </span>
+              </div>
+            </div>
+
+            <div className="tags-section">
+              <div className="tag-input-wrapper">
+                <input
+                  type="text"
+                  placeholder="Add tags (optional) 🏷️"
+                  value={currentTag}
+                  onChange={(e) => setCurrentTag(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="tag-input"
+                  disabled={tags.length >= 5 || isSubmitting}
+                />
+                <button
+                  type="button"
+                  onClick={addTag}
+                  disabled={!currentTag.trim() || tags.length >= 5 || isSubmitting}
+                  className="add-tag-button"
+                >
+                  Add
+                </button>
+              </div>
+
+              {tags.length > 0 && (
+                <div className="tags-list">
+                  {tags.map((tag, index) => (
+                    <span key={index} className="tag">
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="remove-tag"
+                        aria-label={`Remove tag ${tag}`}
+                        disabled={isSubmitting}
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {errorMessage && <div className="form-error" role="alert">{errorMessage}</div>}
+
+            <button
+              type="submit"
+              disabled={content.trim().length < 10 || isSubmitting}
+              className={`submit-button ${isIncognitoMode ? "unhinged" : "positive"}`}
+              aria-disabled={content.trim().length < 10 || isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="spinner" />
+                  {isIncognitoMode ? "Unleashing..." : "Spreading vibes..."}
+                </>
+              ) : (
+                <>
+                  {isIncognitoMode ? <Zap /> : <Send />}
+                  {isIncognitoMode ? "Unleash Thoughts" : "Share the Love"}
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 }

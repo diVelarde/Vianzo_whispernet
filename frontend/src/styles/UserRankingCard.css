@@ -1,0 +1,131 @@
+css
+/* UserRankingCard Component Styles */
+
+.ranking-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.3s ease forwards;
+  opacity: 0;
+}
+
+.ranking-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-card.current-user {
+  background: linear-gradient(to right, #eef2ff, #faf5ff);
+  border-color: #c7d2fe;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ranking-content {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ranking-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rank-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.rank-badge.top-three {
+  background: linear-gradient(to right, #fbbf24, #f97316);
+  color: white;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 1rem;
+}
+
+.you-badge {
+  padding: 2px 8px;
+  background: #e0e7ff;
+  color: #4338ca;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.user-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.heart-icon {
+  color: #f43f5e;
+}
+
+.ranking-right {
+  text-align: right;
+}
+
+.score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4f46e5;
+  margin-bottom: 4px;
+}
+
+.kindness-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+}

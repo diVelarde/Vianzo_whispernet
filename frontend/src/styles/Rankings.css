@@ -1,0 +1,187 @@
+.rankings-container {
+  padding: 16px;
+}
+
+.rankings-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.rankings-header h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.rankings-header p {
+  color: #64748b;
+  margin: 0;
+}
+
+.rankings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ranking-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  transition: all 0.3s;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.ranking-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-card.current-user {
+  background: linear-gradient(to right, #eef2ff, #faf5ff);
+  border-color: #c7d2fe;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ranking-card-content {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ranking-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rank-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.rank-badge.top-three {
+  background: linear-gradient(to right, #fbbf24, #f97316);
+  color: white;
+}
+
+.rank-badge svg {
+  width: 24px;
+  height: 24px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name-row h3 {
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.you-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  background-color: #e0e7ff;
+  color: #4338ca;
+  border-radius: 9999px;
+}
+
+.user-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.user-stats span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.user-stats svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ranking-right {
+  text-align: right;
+}
+
+.popularity-score {
+  font-size: 28px;
+  font-weight: bold;
+  color: #4f46e5;
+  margin-bottom: 4px;
+}
+
+.kindness-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  border: 1px solid;
+}
+
+.kindness-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.kindness-badge.bronze {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.kindness-badge.silver {
+  background-color: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.kindness-badge.gold {
+  background-color: #fef9c3;
+  color: #854d0e;
+  border-color: #fde047;
+}
+
+.kindness-badge.platinum {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+  border-color: #d8b4fe;
+}

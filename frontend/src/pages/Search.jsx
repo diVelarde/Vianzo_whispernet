@@ -1,242 +1,294 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { Search as SearchIcon, Filter, X } from "lucide-react";
+import MessageCard from "../components/MessageCard.jsx";
+import "../styles/Search.css";
 
-// import { useState, useEffect, useCallback } from "react";
-// import { useLocation } from "react-router-dom";
-// import { Message } from "@/entities/all";
-// import MessageCard from "../components/MessageCard";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import { Badge } from "@/components/ui/badge";
-// import { Search as SearchIcon, Filter, X } from "lucide-react";
-// import { motion } from "framer-motion";
-// import { Skeleton } from "@/components/ui/skeleton";
+import { API_BASE_URL } from "../api.js";
 
-// export default function Search() {
-//   const location = useLocation();
-//   const queryParams = new URLSearchParams(location.search);
-  
-//   const [searchTerm, setSearchTerm] = useState(queryParams.get("q") || "");
-//   const [selectedTags, setSelectedTags] = useState([]);
-//   const [messages, setMessages] = useState([]);
-//   const [filteredMessages, setFilteredMessages] = useState([]);
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [availableTags, setAvailableTags] = useState([]);
-
-//   const filterMessages = useCallback(() => {
-//     let filtered = messages;
-
-//     if (searchTerm) {
-//       filtered = filtered.filter(message =>
-//         message.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//         message.username.toLowerCase().includes(searchTerm.toLowerCase())
-//       );
-//     }
-
-//     if (selectedTags.length > 0) {
-//       filtered = filtered.filter(message =>
-//         message.tags && message.tags.some(tag => selectedTags.includes(tag))
-//       );
-//     }
-
-//     setFilteredMessages(filtered);
-//   }, [searchTerm, selectedTags, messages]);
-
-//   useEffect(() => {
-//     loadInitialData();
-//   }, []);
-
-//   useEffect(() => {
-//     filterMessages();
-//   }, [filterMessages]);
-
-//   const loadInitialData = async () => {
-//     setIsLoading(true);
-//     try {
-//       const data = await Message.filter({ is_approved: true }, '-created_date', 100);
-//       setMessages(data);
-      
-//       // Extract unique tags
-//       const tags = new Set();
-//       data.forEach(message => {
-//         if (message.tags) {
-//           message.tags.forEach(tag => tags.add(tag));
-//         }
-//       });
-//       setAvailableTags(Array.from(tags));
-//     } catch (error) {
-//       console.error("Error loading messages:", error);
-//     }
-//     setIsLoading(false);
-//   };
-
-//   const toggleTag = (tag) => {
-//     setSelectedTags(prev =>
-//       prev.includes(tag)
-//         ? prev.filter(t => t !== tag)
-//         : [...prev, tag]
-//     );
-//   };
-
-//   const clearFilters = () => {
-//     setSearchTerm("");
-//     setSelectedTags([]);
-//   };
-
-//   const handleLike = async (messageId, isLiked) => {
-//     try {
-//       const message = messages.find(m => m.id === messageId);
-//       if (message) {
-//         const newLikesCount = isLiked 
-//           ? message.likes_count + 1 
-//           : Math.max(0, message.likes_count - 1);
-        
-//         await Message.update(messageId, { likes_count: newLikesCount });
-//         setMessages(prev => prev.map(m => 
-//           m.id === messageId ? { ...m, likes_count: newLikesCount } : m
-//         ));
-//       }
-//     } catch (error) {
-//       console.error("Error updating likes:", error);
-//     }
-//   };
-
-//   const handleReport = async (messageId) => {
-//     try {
-//       const message = messages.find(m => m.id === messageId);
-//       if (message) {
-//         await Message.update(messageId, { 
-//           reported_count: message.reported_count + 1 
-//         });
-//       }
-//     } catch (error) {
-//       console.error("Error reporting message:", error);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-8">
-//       <div className="max-w-4xl mx-auto">
-//         <div className="mb-8">
-//           <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-//             Search Messages
-//           </h1>
-//           <p className="text-gray-600">Find inspiring messages and positive content</p>
-//         </div>
-
-//         <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-indigo-200 p-6 mb-6">
-//           <div className="flex gap-4 mb-4">
-//             <div className="flex-1 relative">
-//               <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-//               <Input
-//                 placeholder="Search messages or usernames..."
-//                 value={searchTerm}
-//                 onChange={(e) => setSearchTerm(e.target.value)}
-//                 className="pl-10 border-indigo-200 focus:border-indigo-400"
-//               />
-//             </div>
-//             {(searchTerm || selectedTags.length > 0) && (
-//               <Button
-//                 variant="outline"
-//                 onClick={clearFilters}
-//                 className="border-indigo-200 hover:bg-indigo-50"
-//               >
-//                 <X className="w-4 h-4 mr-2" />
-//                 Clear
-//               </Button>
-//             )}
-//           </div>
-
-//           {availableTags.length > 0 && (
-//             <div>
-//               <div className="flex items-center gap-2 mb-3">
-//                 <Filter className="w-4 h-4 text-gray-500" />
-//                 <span className="text-sm font-medium text-gray-700">Filter by tags:</span>
-//               </div>
-//               <div className="flex flex-wrap gap-2">
-//                 {availableTags.map((tag) => (
-//                   <Badge
-//                     key={tag}
-//                     variant={selectedTags.includes(tag) ? "default" : "outline"}
-//                     className={`cursor-pointer transition-colors ${
-//                       selectedTags.includes(tag)
-//                         ? "bg-indigo-600 text-white hover:bg-indigo-700"
-//                         : "border-indigo-200 hover:bg-indigo-50 text-gray-700"
-//                     }`}
-//                     onClick={() => toggleTag(tag)}
-//                   >
-//                     #{tag}
-//                   </Badge>
-//                 ))}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-
-//         <div className="space-y-6">
-//           {isLoading ? (
-//             Array(5).fill(0).map((_, i) => (
-//               <div key={i} className="bg-white rounded-lg p-6 border border-indigo-100">
-//                 <div className="flex items-center gap-3 mb-4">
-//                   <Skeleton className="w-8 h-8 rounded-full" />
-//                   <div>
-//                     <Skeleton className="h-4 w-24 mb-1" />
-//                     <Skeleton className="h-3 w-32" />
-//                   </div>
-//                 </div>
-//                 <Skeleton className="h-16 w-full mb-4" />
-//                 <div className="flex justify-between">
-//                   <Skeleton className="h-8 w-20" />
-//                   <Skeleton className="h-8 w-20" />
-//                 </div>
-//               </div>
-//             ))
-//           ) : filteredMessages.length === 0 ? (
-//             <motion.div
-//               initial={{ opacity: 0 }}
-//               animate={{ opacity: 1 }}
-//               className="text-center py-16"
-//             >
-//               <div className="w-24 h-24 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-//                 <SearchIcon className="w-12 h-12 text-indigo-600" />
-//               </div>
-//               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-//                 {searchTerm || selectedTags.length > 0 ? "No messages found" : "Start searching"}
-//               </h3>
-//               <p className="text-gray-600">
-//                 {searchTerm || selectedTags.length > 0 
-//                   ? "Try different keywords or remove some filters" 
-//                   : "Enter keywords or select tags to find positive messages"
-//                 }
-//               </p>
-//             </motion.div>
-//           ) : (
-//             <>
-//               <div className="text-sm text-gray-600 mb-4">
-//                 Found {filteredMessages.length} message{filteredMessages.length !== 1 ? 's' : ''}
-//               </div>
-//               {filteredMessages.map((message, index) => (
-//                 <motion.div
-//                   key={message.id}
-//                   initial={{ opacity: 0, y: 20 }}
-//                   animate={{ opacity: 1, y: 0 }}
-//                   transition={{ duration: 0.5, delay: index * 0.1 }}
-//                 >
-//                   <MessageCard
-//                     message={message}
-//                     onLike={handleLike}
-//                     onReport={handleReport}
-//                   />
-//                 </motion.div>
-//               ))}
-//             </>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-import React from "react";
+const mockMessages = [
+  { id: "1", user_id: "user1", username: "KindPanda", content: "Remember: every small act of kindness creates a ripple effect!", whisper_id: "Whispering #0001", likes_count: 24, comments_count: 5, tags: ["kindness", "motivation"], mode: "positive", created_date: new Date(Date.now() - 3600000).toISOString() },
+  { id: "2", user_id: "user2", username: "BraveDolphin", content: "Just finished my first 5K run! Progress isn't always visible day-to-day.", whisper_id: "Whispering #0002", likes_count: 45, comments_count: 12, tags: ["fitness", "progress"], mode: "positive", created_date: new Date(Date.now() - 7200000).toISOString() },
+  { id: "3", user_id: "user3", username: "GentleOwl", content: "Taking time for self-care isn't selfish, it's necessary. 🌸", whisper_id: "Whispering #0003", likes_count: 67, comments_count: 8, tags: ["selfcare", "mental-health"], mode: "positive", created_date: new Date(Date.now() - 10800000).toISOString() },
+];
 
 export default function Search() {
-  return <div className="text-xl font-medium">This is the Search page.</div>;
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+
+  const [searchTerm, setSearchTerm] = useState(queryParams.get("q") || "");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [filteredMessages, setFilteredMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [availableTags, setAvailableTags] = useState([]);
+  const [fetchError, setFetchError] = useState(null);
+
+  const debounceRef = useRef(null);
+  const latestFetchController = useRef(null);
+
+  // Fetch messages from backend (debounced when searchTerm/selectedTags change)
+  useEffect(() => {
+    // debounce to avoid spamming the API while typing
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      // Abort previous fetch if any
+      if (latestFetchController.current) {
+        latestFetchController.current.abort();
+      }
+      const controller = new AbortController();
+      latestFetchController.current = controller;
+
+      async function loadMessages() {
+        setIsLoading(true);
+        setFetchError(null);
+
+        const token = localStorage.getItem("token");
+        const headers = token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
+
+        try {
+          // Build query params for backend search
+          const params = new URLSearchParams();
+          if (searchTerm) params.set("search", searchTerm);
+          if (selectedTags.length) params.set("tags", selectedTags.join(","));
+          // default page size
+          params.set("limit", "50");
+
+          // Try common post search endpoint
+          const res = await fetch(`${API_BASE_URL}/posts?${params.toString()}`, { headers, signal: controller.signal });
+
+          let data = null;
+          if (res.ok) {
+            data = await res.json();
+          } else {
+            // fallback to a generic search endpoint
+            const altRes = await fetch(`${API_BASE_URL}/search?${params.toString()}`, { headers, signal: controller.signal });
+            if (altRes.ok) data = await altRes.json();
+          }
+
+          if (!data) {
+            // If backend didn't return data, fall back to local mock filtering
+            setMessages(mockMessages);
+            const tags = new Set();
+            mockMessages.forEach(m => m.tags?.forEach(t => tags.add(t)));
+            setAvailableTags(Array.from(tags));
+            setIsLoading(false);
+            return;
+          }
+
+          // Normalize possible shapes: array of posts or { posts: [...] }
+          let posts = Array.isArray(data) ? data : (Array.isArray(data.posts) ? data.posts : []);
+          // Ensure the posts have expected fields
+          posts = posts.map(p => ({
+            id: p.id ?? p._id ?? String(Math.random()),
+            user_id: p.user_id ?? p.userId ?? p.author_id,
+            username: p.username ?? p.display_name ?? p.author_name ?? "Anonymous",
+            content: p.content ?? p.body ?? "",
+            whisper_id: p.whisper_id ?? p.whisperId ?? p.slug ?? "",
+            likes_count: p.likes_count ?? p.likes ?? 0,
+            comments_count: p.comments_count ?? p.comments ?? 0,
+            tags: p.tags ?? p.tags_list ?? [],
+            mode: p.mode ?? (p.is_moderated ? "positive" : "unhinged"),
+            created_date: p.created_date ?? p.created_at ?? p.timestamp ?? new Date().toISOString(),
+          }));
+
+          setMessages(posts);
+
+          // derive available tags from returned posts if backend doesn't provide /tags endpoint
+          const tagSet = new Set();
+          posts.forEach(m => m.tags?.forEach(t => tagSet.add(t)));
+          // additionally try to fetch tags list endpoint if available (best-effort)
+          try {
+            const tagsRes = await fetch(`${API_BASE_URL}/tags`, { headers, signal: controller.signal });
+            if (tagsRes.ok) {
+              const tagsData = await tagsRes.json();
+              if (Array.isArray(tagsData) && tagsData.length > 0) {
+                setAvailableTags(tagsData);
+              } else {
+                setAvailableTags(Array.from(tagSet));
+              }
+            } else {
+              setAvailableTags(Array.from(tagSet));
+            }
+          } catch {
+            setAvailableTags(Array.from(tagSet));
+          }
+        } catch (err) {
+          if (err.name === "AbortError") {
+            // aborted - ignore
+            return;
+          }
+          console.warn("Search fetch failed, falling back to mock messages.", err);
+          setFetchError(err.message || "Failed to load search results");
+          setMessages(mockMessages);
+          const tags = new Set();
+          mockMessages.forEach(m => m.tags?.forEach(t => tags.add(t)));
+          setAvailableTags(Array.from(tags));
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      loadMessages();
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (latestFetchController.current) {
+        // Do not abort here to allow in-flight request to finish if user navigates quickly.
+        // (cleanup on next fetch or unmount)
+      }
+    };
+  }, [searchTerm, selectedTags]);
+
+  // Cleanup on unmount: abort any in-flight fetch
+  useEffect(() => {
+    return () => {
+      if (latestFetchController.current) latestFetchController.current.abort();
+    };
+  }, []);
+
+  // Keep client-side filteredMessages in sync (used when backend returns many posts or for immediate UI)
+  useEffect(() => {
+    let filtered = messages;
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter(m =>
+        (m.content || "").toLowerCase().includes(q) ||
+        (m.username || "").toLowerCase().includes(q)
+      );
+    }
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(m => (m.tags || []).some(t => selectedTags.includes(t)));
+    }
+    setFilteredMessages(filtered);
+  }, [messages, searchTerm, selectedTags]);
+
+  const toggleTag = (tag) => {
+    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedTags([]);
+  };
+
+  // Optimistic like handling with backend sync
+  const handleLike = async (messageId, isLiked) => {
+    setMessages(prev => prev.map(m =>
+      m.id === messageId
+        ? { ...m, likes_count: isLiked ? (m.likes_count || 0) + 1 : Math.max(0, (m.likes_count || 0) - 1), _optimisticLiking: true }
+        : m
+    ));
+
+    try {
+      const token = localStorage.getItem("token");
+      const headers = token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
+
+      const res = await fetch(`${API_BASE_URL}/posts/${messageId}/like`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ like: isLiked })
+      });
+
+      if (!res.ok) throw new Error(`Like failed (${res.status})`);
+
+      const body = await res.json().catch(() => null);
+      setMessages(prev => prev.map(m =>
+        m.id === messageId
+          ? { ...m, likes_count: typeof body?.likes_count === "number" ? body.likes_count : m.likes_count, _optimisticLiking: false }
+          : m
+      ));
+    } catch (err) {
+      console.error("Failed to sync like:", err);
+      // revert optimistic change
+      setMessages(prev => prev.map(m =>
+        m.id === messageId
+          ? { ...m, likes_count: isLiked ? Math.max(0, (m.likes_count || 0) - 1) : (m.likes_count || 0) + 1, _optimisticLiking: false }
+          : m
+      ));
+      setFetchError(err.message || "Failed to sync like");
+    }
+  };
+
+  return (
+    <div className="search-container">
+      <div className="search-header">
+        <h1>Search Messages</h1>
+        <p>Find inspiring messages and positive content</p>
+      </div>
+
+      {fetchError && (
+        <div className="error-banner">
+          <p>There was a problem loading live results: {String(fetchError)} — showing fallback content where available.</p>
+        </div>
+      )}
+
+      <div className="search-filters-card">
+        <div className="search-input-row">
+          <div className="search-input-wrapper">
+            <SearchIcon className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search messages or usernames..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          {(searchTerm || selectedTags.length > 0) && (
+            <button onClick={clearFilters} className="clear-button">
+              <X /> Clear
+            </button>
+          )}
+        </div>
+
+        {availableTags.length > 0 && (
+          <div className="tags-filter">
+            <div className="tags-filter-header">
+              <Filter />
+              <span>Filter by tags:</span>
+            </div>
+            <div className="tags-filter-list">
+              {availableTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => toggleTag(tag)}
+                  className={`tag-filter-button ${selectedTags.includes(tag) ? 'active' : ''}`}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="search-results">
+        {isLoading ? (
+          Array(3).fill(0).map((_, i) => <div key={i} className="skeleton-card" />)
+        ) : filteredMessages.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon-wrapper">
+              <SearchIcon />
+            </div>
+            <h3>{searchTerm || selectedTags.length > 0 ? "No messages found" : "Start searching"}</h3>
+          </div>
+        ) : (
+          <>
+            <p className="results-count">Found {filteredMessages.length} message(s)</p>
+            {filteredMessages.map((message) => (
+              <MessageCard
+                key={message.id}
+                message={message}
+                onLike={handleLike}
+                onReport={() => {}}
+              />
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }

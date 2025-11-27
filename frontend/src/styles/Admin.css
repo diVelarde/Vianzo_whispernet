@@ -1,0 +1,176 @@
+.admin-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-title svg {
+  width: 24px;
+  height: 24px;
+  color: #8b5cf6;
+}
+
+.admin-title h1 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+}
+
+.refresh-button {
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+.refresh-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refresh-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.refresh-button svg.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pending-count {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.pending-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.pending-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pending-card-header .username {
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+}
+
+.pending-card-header .whisper-id {
+  font-size: 12px;
+  padding: 2px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  color: #64748b;
+}
+
+.pending-card .content {
+  color: #1e293b;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.pending-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.reject-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  background: white;
+  color: #ef4444;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.reject-button:hover:not(:disabled) {
+  background-color: #fef2f2;
+}
+
+.reject-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reject-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.approve-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: #22c55e;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.approve-button:hover:not(:disabled) {
+  background-color: #16a34a;
+}
+
+.approve-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.approve-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.success-icon {
+  width: 48px;
+  height: 48px;
+  color: #22c55e;
+}

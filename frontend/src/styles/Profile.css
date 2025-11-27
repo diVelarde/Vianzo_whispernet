@@ -1,0 +1,285 @@
+.profile-container {
+  padding: 16px;
+}
+
+.profile-container > h1 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.skeleton-card.large {
+  height: 128px;
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar {
+  width: 48px;
+  height: 48px;
+  color: #8b5cf6;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.name-input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 16px;
+  outline: none;
+}
+
+.name-input:focus {
+  border-color: #8b5cf6;
+}
+
+.display-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.display-name-row h2 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+}
+
+.icon-button {
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.icon-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.icon-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.email {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: 1px solid;
+}
+
+.badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.badge.bronze {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.badge.silver {
+  background-color: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.badge.gold {
+  background-color: #fef9c3;
+  color: #854d0e;
+  border-color: #fde047;
+}
+
+.badge.platinum {
+  background-color: #f3e8ff;
+  color: #6b21a8;
+  border-color: #d8b4fe;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card svg {
+  width: 32px;
+  height: 32px;
+  color: #8b5cf6;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.settings-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-title {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.setting-description {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.toggle-switch {
+  width: 48px;
+  height: 24px;
+  background-color: #d1d5db;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.toggle-switch.active {
+  background-color: #8b5cf6;
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-switch.active .toggle-knob {
+  transform: translateX(24px);
+}
+
+.logout-button {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+  background-color: #f9fafb;
+}
+
+.logout-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.error-message {
+  text-align: center;
+  color: #64748b;
+}

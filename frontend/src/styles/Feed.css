@@ -1,0 +1,151 @@
+.feed-container {
+  height: 100%;
+  position: relative;
+  padding-bottom: 64px;
+}
+
+.feed-header {
+  position: sticky;
+  top: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 16px;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.3);
+  z-index: 10;
+}
+
+.feed-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.feed-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1e293b;
+  margin: 0;
+}
+
+.post-vibe-button {
+  background: linear-gradient(to right, #ec4899, #0ea5e9);
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.post-vibe-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.feed-filters {
+  display: flex;
+  margin-top: 8px;
+}
+
+.filter-button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  font-weight: bold;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.filter-button.active {
+  color: #8b5cf6;
+  border-bottom-color: #8b5cf6;
+}
+
+.filter-button:hover {
+  color: #8b5cf6;
+}
+
+.feed-content {
+  padding: 16px;
+  padding-bottom: 80px;
+}
+
+.skeleton-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-card {
+  height: 160px;
+  width: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 24px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 64px 16px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1e293b;
+}
+
+.empty-state p {
+  color: #64748b;
+  margin: 0;
+}
+
+.back-to-top-button {
+  position: fixed;
+  bottom: 80px;
+  right: 32px;
+  z-index: 20;
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ec4899, #0ea5e9);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.back-to-top-button:hover {
+  transform: scale(1.1);
+}
+
+@media (min-width: 1024px) {
+  .feed-container {
+    padding-bottom: 0;
+  }
+  
+  .back-to-top-button {
+    bottom: 32px;
+  }
+}

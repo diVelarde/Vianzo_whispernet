@@ -1,90 +1,92 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import React, { useMemo } from "react";
 import { Trophy, Heart, MessageSquare, Award } from "lucide-react";
-import { motion } from "framer-motion";
+import "../styles/UserRankingCard.css";
 
-const badgeColors = {
-  bronze: "bg-amber-100 text-amber-800 border-amber-300",
-  silver: "bg-gray-100 text-gray-800 border-gray-300", 
-  gold: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  platinum: "bg-purple-100 text-purple-800 border-purple-300"
-};
+const badgeIcons = { bronze: "🥉", silver: "🥈", gold: "🥇", platinum: "💎" };
 
-const badgeIcons = {
-  bronze: "🥉",
-  silver: "🥈", 
-  gold: "🥇",
-  platinum: "💎"
-};
+export default function UserRankingCard({ user = {}, rank = 0, currentUser = null, onClick }) {
+  // normalize common shapes so component is resilient to different backend responses
+  const normalized = useMemo(() => {
+    const popularity_score = Number(
+      user.popularity_score ?? user.popularity ?? user.score ?? 0
+    );
 
-export default function UserRankingCard({ user, rank, currentUser }) {
-  const isCurrentUser = currentUser && user.user_id === currentUser.id;
+    return {
+      id: user.id ?? user.user_id ?? String(Math.random()),
+      user_id: user.user_id ?? user.id ?? user.userId,
+      display_name: user.display_name ?? user.name ?? `User ${String(user.id ?? user.user_id ?? "").slice(-4) || ""}`,
+      messages_posted: user.messages_posted ?? user.messagesCount ?? user.messages ?? 0,
+      total_likes_received: user.total_likes_received ?? user.likes ?? 0,
+      popularity_score,
+      kindness_badge: user.kindness_badge ?? deriveBadge(popularity_score),
+    };
+  }, [user]);
+
+  const isCurrentUser = currentUser && (normalized.user_id === currentUser.id || normalized.id === currentUser.id);
+
+  function deriveBadge(score) {
+    const s = Number(score || 0);
+    if (s >= 500) return "platinum";
+    if (s >= 200) return "gold";
+    if (s >= 50) return "silver";
+    if (s >= 10) return "bronze";
+    return null;
+  }
+
+  const handleKeyPress = (e) => {
+    if (!onClick) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick(normalized);
+    }
+  };
+
+  const handleClick = () => {
+    if (typeof onClick === "function") onClick(normalized);
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: rank * 0.1 }}
+    <div
+      className={`ranking-card ${isCurrentUser ? "current-user" : ""}`}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick ? handleClick : undefined}
+      onKeyPress={onClick ? handleKeyPress : undefined}
+      aria-pressed={isCurrentUser ? true : undefined}
     >
-      <Card className={`transition-all duration-300 hover:shadow-lg ${
-        isCurrentUser 
-          ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200' 
-          : 'bg-white/80 backdrop-blur-sm border-gray-200'
-      }`}>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                rank <= 3 
-                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white' 
-                  : 'bg-gray-100 text-gray-700'
-              }`}>
-                {rank <= 3 ? (
-                  <Trophy className="w-6 h-6" />
-                ) : (
-                  `#${rank}`
-                )}
-              </div>
-              
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-gray-900">
-                    {user.display_name || `Student #${user.id.slice(-4)}`}
-                  </h3>
-                  {isCurrentUser && (
-                    <Badge variant="outline" className="text-xs bg-indigo-100 text-indigo-700">
-                      You
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="flex items-center gap-4 mt-1">
-                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>{user.messages_posted} messages</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                    <Heart className="w-4 h-4 text-rose-500" />
-                    <span>{user.total_likes_received} likes</span>
-                  </div>
-                </div>
-              </div>
+      <div className="ranking-card-content">
+        <div className="ranking-left">
+          <div className={`rank-badge ${rank <= 3 ? "top-three" : ""}`} aria-hidden>
+            {rank <= 3 ? <Trophy /> : `#${rank}`}
+          </div>
+          <div className="user-info">
+            <div className="user-name-row">
+              <h3 className="user-name">{normalized.display_name || `User #${String(normalized.id).slice(-4)}`}</h3>
+              {isCurrentUser && <span className="you-badge" aria-label="You">You</span>}
             </div>
-
-            <div className="text-right">
-              <div className="text-2xl font-bold text-indigo-600 mb-1">
-                {user.popularity_score || 0}
-              </div>
-              {user.kindness_badge && (
-                <Badge className={`${badgeColors[user.kindness_badge]} text-xs`}>
-                  <Award className="w-3 h-3 mr-1" />
-                  {badgeIcons[user.kindness_badge]} {user.kindness_badge}
-                </Badge>
-              )}
+            <div className="user-stats">
+              <span className="stat-item" title={`${normalized.messages_posted} messages`}>
+                <MessageSquare /> <span className="stat-number">{normalized.messages_posted}</span>
+              </span>
+              <span className="stat-item" title={`${normalized.total_likes_received} likes`}>
+                <Heart /> <span className="stat-number">{normalized.total_likes_received}</span>
+              </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        </div>
+
+        <div className="ranking-right">
+          <div className="popularity-score" aria-label={`Vibe score ${normalized.popularity_score}`}>
+            {normalized.popularity_score}
+          </div>
+
+          {normalized.kindness_badge && (
+            <span className={`kindness-badge ${normalized.kindness_badge}`} aria-hidden>
+              <Award /> {badgeIcons[normalized.kindness_badge]} {normalized.kindness_badge}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

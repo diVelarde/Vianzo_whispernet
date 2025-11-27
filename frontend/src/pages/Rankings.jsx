@@ -1,103 +1,195 @@
+import React, { useState, useEffect } from "react";
+import { Trophy, Heart, MessageSquare, Award } from "lucide-react";
+import "../styles/Rankings.css";
 
-// import { useState, useEffect, useCallback } from "react";
-// import { UserProfile, User, Message } from "@/entities/all";
-// import UserRankingCard from "../components/UserRankingCard";
-// import { Trophy } from "lucide-react";
-// import { Skeleton } from "@/components/ui/skeleton";
+import { API_BASE_URL } from "../api.js";
 
-// export default function Rankings() {
-//   const [users, setUsers] = useState([]);
-//   const [currentUser, setCurrentUser] = useState(null);
-//   const [isLoading, setIsLoading] = useState(true);
+const mockUsers = [
+  { id: "1", user_id: "user1", display_name: "KindPanda", messages_posted: 45, total_likes_received: 234, popularity_score: 918, kindness_badge: "gold" },
+  { id: "2", user_id: "user2", display_name: "BraveDolphin", messages_posted: 32, total_likes_received: 189, popularity_score: 698, kindness_badge: "gold" },
+  { id: "3", user_id: "user3", display_name: "GentleOwl", messages_posted: 28, total_likes_received: 156, popularity_score: 592, kindness_badge: "gold" },
+  { id: "4", user_id: "user4", display_name: "HappyFox", messages_posted: 21, total_likes_received: 98, popularity_score: 406, kindness_badge: "silver" },
+  { id: "5", user_id: "user5", display_name: "CalmRabbit", messages_posted: 15, total_likes_received: 67, popularity_score: 284, kindness_badge: "silver" },
+];
 
-//   const reSyncAllStats = useCallback(async (profiles) => {
-//     try {
-//       const allMessages = await Message.list();
-//       const updates = profiles.map(profile => {
-//         const userMessages = allMessages.filter(msg => msg.user_id === profile.user_id && msg.is_approved === 'approved');
-//         const totalLikes = userMessages.reduce((sum, msg) => sum + (msg.likes_count || 0), 0);
-//         const messagesPosted = userMessages.length;
-//         const popularityScore = (messagesPosted * 10) + (totalLikes * 2);
+const mockCurrentUser = { id: "user2" };
 
-//         if(profile.total_likes_received !== totalLikes || profile.messages_posted !== messagesPosted || profile.popularity_score !== popularityScore) {
-//           return UserProfile.update(profile.id, {
-//             user_id: profile.user_id, // Add user_id to the update payload
-//             total_likes_received: totalLikes,
-//             messages_posted: messagesPosted,
-//             popularity_score: popularityScore
-//           });
-//         }
-//         return null;
-//       }).filter(Boolean);
+const badgeIcons = { bronze: "🥉", silver: "🥈", gold: "🥇", platinum: "💎" };
 
-//       if (updates.length > 0) {
-//         await Promise.all(updates);
-//         // Re-fetch after updating
-//         return await UserProfile.list('-popularity_score');
-//       }
-//       return profiles;
-//     } catch (error) {
-//       console.error("Error re-syncing all stats:", error);
-//       return profiles;
-//     }
-//   }, []);
+function deriveBadge(popularity_score) {
+  const score = Number(popularity_score || 0);
+  if (score >= 500) return "platinum";
+  if (score >= 200) return "gold";
+  if (score >= 50) return "silver";
+  if (score >= 10) return "bronze";
+  return null;
+}
 
+function UserRankingCard({ user, rank, currentUser }) {
+  const isCurrentUser = currentUser && user.user_id === currentUser.id;
 
-//   useEffect(() => {
-//     const loadRankings = async () => {
-//       setIsLoading(true);
-//       try {
-//         const [userProfiles, user] = await Promise.all([
-//           UserProfile.list('-popularity_score'),
-//           User.me().catch(() => null)
-//         ]);
-        
-//         const syncedProfiles = await reSyncAllStats(userProfiles);
-
-//         setUsers(syncedProfiles.sort((a,b) => (b.popularity_score || 0) - (a.popularity_score || 0)));
-//         setCurrentUser(user);
-//       } catch (error) {
-//         console.error("Error loading rankings:", error);
-//       }
-//       setIsLoading(false);
-//     };
-
-//     loadRankings();
-//   }, [reSyncAllStats]);
-
-//   return (
-//     <div className="p-4">
-//       <div className="text-center mb-8">
-//         <h1 className="text-2xl font-bold">Kindness Leaderboard</h1>
-//         <p className="text-text-secondary">Celebrating our most positive contributors</p>
-//       </div>
-
-//       <div className="space-y-4">
-//         {isLoading ? (
-//           Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl"/>)
-//         ) : users.length === 0 ? (
-//           <div className="text-center py-16">
-//             <Trophy className="w-12 h-12 mx-auto text-primary mb-4" />
-//             <h3 className="text-xl font-semibold mb-2">No rankings yet</h3>
-//             <p className="text-text-secondary">Start sharing vibes to get on the board!</p>
-//           </div>
-//         ) : (
-//           users.map((user, index) => (
-//             <UserRankingCard
-//               key={user.id}
-//               user={user}
-//               rank={index + 1}
-//               currentUser={currentUser}
-//             />
-//           ))
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
-import React from "react";
+  return (
+    <div className={`ranking-card ${isCurrentUser ? 'current-user' : ''}`}>
+      <div className="ranking-card-content">
+        <div className="ranking-left">
+          <div className={`rank-badge ${rank <= 3 ? 'top-three' : ''}`}>
+            {rank <= 3 ? <Trophy /> : `#${rank}`}
+          </div>
+          <div className="user-info">
+            <div className="user-name-row">
+              <h3>{user.display_name || `User #${String(user.id).slice(-4)}`}</h3>
+              {isCurrentUser && <span className="you-badge">You</span>}
+            </div>
+            <div className="user-stats">
+              <span><MessageSquare /> {user.messages_posted ?? 0} messages</span>
+              <span><Heart /> {user.total_likes_received ?? 0} likes</span>
+            </div>
+          </div>
+        </div>
+        <div className="ranking-right">
+          <div className="popularity-score">{user.popularity_score ?? 0}</div>
+          { (user.kindness_badge || deriveBadge(user.popularity_score)) && (
+            <span className={`kindness-badge ${user.kindness_badge || deriveBadge(user.popularity_score)}`}>
+              <Award /> {badgeIcons[user.kindness_badge || deriveBadge(user.popularity_score)]} {user.kindness_badge || deriveBadge(user.popularity_score)}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Rankings() {
-  return <div className="text-xl font-medium">This is the Rankings page.</div>;
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let mounted = true;
+
+    async function loadRankings() {
+      setIsLoading(true);
+      setFetchError(null);
+
+      const token = localStorage.getItem("token");
+      const headers = token ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` } : { "Content-Type": "application/json" };
+
+      try {
+        // Try a dedicated leaderboard endpoint first
+        let rankingsRes = await fetch(`${API_BASE_URL}/rankings`, { headers, signal: controller.signal });
+        let rankingsData = null;
+
+        if (rankingsRes.ok) {
+          rankingsData = await rankingsRes.json();
+        } else {
+          // fallback: try a profiles endpoint sorted by popularity (common patterns)
+          const fallbackRes = await fetch(`${API_BASE_URL}/profiles?sort=-popularity_score&limit=50`, { headers, signal: controller.signal });
+          if (fallbackRes.ok) {
+            rankingsData = await fallbackRes.json();
+          } else {
+            // final fallback: some APIs return /leaderboard
+            const otherRes = await fetch(`${API_BASE_URL}/leaderboard`, { headers, signal: controller.signal });
+            if (otherRes.ok) {
+              rankingsData = await otherRes.json();
+            }
+          }
+        }
+
+        if (!mounted) return;
+
+        // Normalize data into expected shape: array of users
+        let normalized = [];
+        if (Array.isArray(rankingsData)) {
+          normalized = rankingsData.map((u, idx) => ({
+            id: u.id ?? u.user_id ?? String(idx),
+            user_id: u.user_id ?? u.id ?? u.userId ?? `user_${idx}`,
+            display_name: u.display_name ?? u.name ?? `User ${idx + 1}`,
+            messages_posted: u.messages_posted ?? u.messagesCount ?? 0,
+            total_likes_received: u.total_likes_received ?? u.likes ?? 0,
+            popularity_score: u.popularity_score ?? u.popularity ?? 0,
+            kindness_badge: u.kindness_badge ?? deriveBadge(u.popularity_score ?? u.popularity),
+          }));
+        }
+
+        if (!normalized.length) {
+          // If the API returned nothing useful, use mock users
+          setUsers(mockUsers);
+        } else {
+          // Sort descending by popularity_score just in case
+          normalized.sort((a, b) => (b.popularity_score || 0) - (a.popularity_score || 0));
+          setUsers(normalized);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch rankings, falling back to mocks.", err);
+        setFetchError(err.message || "Failed to load rankings");
+        if (mounted) {
+          setUsers(mockUsers);
+        }
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+
+      // Load current user (best-effort)
+      try {
+        let me = null;
+        const meRes = await fetch(`${API_BASE_URL}/me`, { headers, signal: controller.signal });
+        if (meRes.ok) {
+          me = await meRes.json();
+        } else {
+          const meRes2 = await fetch(`${API_BASE_URL}/users/me`, { headers, signal: controller.signal });
+          if (meRes2.ok) me = await meRes2.json();
+        }
+        if (mounted) {
+          setCurrentUser(me ?? mockCurrentUser);
+        }
+      } catch {
+        if (mounted) setCurrentUser(mockCurrentUser);
+      }
+    }
+
+    loadRankings();
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
+  }, []);
+
+  return (
+    <div className="rankings-container">
+      <div className="rankings-header">
+        <h1>Kindness Leaderboard</h1>
+        <p>Celebrating our most positive contributors</p>
+      </div>
+
+      {fetchError && (
+        <div className="error-banner">
+          <p>There was a problem loading live rankings — showing fallback data.</p>
+        </div>
+      )}
+
+      <div className="rankings-list">
+        {isLoading ? (
+          Array(5).fill(0).map((_, i) => <div key={i} className="skeleton-card" />)
+        ) : users.length === 0 ? (
+          <div className="empty-state">
+            <Trophy />
+            <h3>No rankings yet</h3>
+            <p>Start sharing vibes to get on the board!</p>
+          </div>
+        ) : (
+          users.map((user, index) => (
+            <UserRankingCard
+              key={user.id ?? user.user_id ?? index}
+              user={user}
+              rank={index + 1}
+              currentUser={currentUser}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
 }

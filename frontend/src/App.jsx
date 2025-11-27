@@ -1,75 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './components/RightSideBar';
-import Header from './components/Header';
-import Compose from './components/ComposeForm';
-import Feed from './components/Feed';
-import Trending from './components/Trending';
-import './App.css';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Feed from "./pages/Feed";
+import Compose from "./pages/Compose";
+import Search from "./pages/Search";
+import Rankings from "./pages/Rankings";
+import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
+import "./App.css";
 
-const BACKEND_URL = "https://whisper-net.base44.app/api/v1"; // use your backend API URL
-
-function App() {
-  const [posts, setPosts] = useState([]);
-  const [activeSection, setActiveSection] = useState('feed');
-
-  // Fetch posts from backend
-  const fetchPosts = async () => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/posts`);
-      const data = await res.json();
-      setPosts(data);
-    } catch (err) {
-      console.error(err);
-      setPosts([]);
-    }
-  };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const handlePost = async (content) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-      if (!res.ok) throw new Error('Failed to post');
-      fetchPosts();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to post whisper');
-    }
-  };
-
-  const handleLike = async (postId) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/posts/${postId}/like`, { method: 'POST' });
-      if (!res.ok) throw new Error('Failed to like');
-      fetchPosts();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+export default function App() {
   return (
-    <div className="app-container">
-      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
-      <main className="main-content">
-        <Header activeSection={activeSection} />
-        {activeSection === 'feed' && (
-          <>
-            <Compose onPost={handlePost} />
-            <Feed posts={posts} onLike={handleLike} />
-          </>
-        )}
-      </main>
-      <aside className="right-sidebar">
-        <Trending posts={posts} />
-      </aside>
-    </div>
+    <BrowserRouter>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Feed />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/compose" element={<Compose />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/rankings" element={<Rankings />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
   );
 }
-
-export default App;

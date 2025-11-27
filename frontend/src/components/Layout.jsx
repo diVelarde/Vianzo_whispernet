@@ -157,16 +157,6 @@ export default function Layout({ children }) {
                 ))}
               </nav>
 
-              <div className="sidebar-footer">
-                <button className={`incognito-toggle ${isIncognitoMode ? "active" : ""}`} onClick={toggleIncognito} aria-pressed={isIncognitoMode} title="Toggle incognito mode">
-                  <Moon /> {isIncognitoMode ? "Incognito" : "Normal"}
-                </button>
-
-                <button className="logout-button" onClick={handleLogout} title="Log out">
-                  <LogOut /> Logout
-                </button>
-              </div>
-
               {fetchError && (
                 <div className="sidebar-error" role="status">
                   <small>Could not load user data ({String(fetchError)}). Using cached settings.</small>

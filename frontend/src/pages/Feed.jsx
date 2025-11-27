@@ -320,15 +320,7 @@ export default function Feed() {
               </Link>
             </button>
 
-            <button
-              className={`filter-button ${isIncognitoMode ? "active" : ""}`}
-              aria-pressed={isIncognitoMode}
-              onClick={() => setIsIncognitoMode((s) => !s)}
-              title="Toggle incognito (shows all posts when on)"
-              style={{ padding: "8px 10px", marginLeft: 4 }}
-            >
-              {isIncognitoMode ? "Incognito On" : "Incognito Off"}
-            </button>
+            
           </div>
         </div>
 
